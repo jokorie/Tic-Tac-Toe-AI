@@ -5,7 +5,7 @@ Created on Wed Dec 28 00:37:57 2022
 @author: justin
 """
 from board_evaluation import evaluation
-
+from store_boards import *
 import copy
 
 class TreeNode:
@@ -102,12 +102,35 @@ class TreeNode:
         for child in self.get_children():
             child.reset_trail()
     
+    def input_board_position(self, player_ismin):
+        if player_ismin:
+            team = 'O'
+        else:
+            team = 'X'
+        while True:
+            print('-----please specify your next move-----')
+            column = int(input('Column (1-3): '))
+            row = int(input('Row (1-3): '))
+            print('-----Thank you-----')
+            played_board = self.get_board()[:]
+            if played_board[row-1][column-1] != '-':
+                print('Sorry you selected an occupied spot. Try again')
+                continue
+            break
+        played_board[row-1][column-1] = team
+        for child in self.get_children():
+            if child.get_board() == played_board:
+                return child
+        else:
+            return None
+
+
     def display_status(self):
         print('-----Status of Current Node-----')
-        # if self.get_parent() != None:
-        #     print('parent is', self.get_parent().display_board())
-        # else:
-        #     print('We are actively in the root node')
+        if self.get_parent() != None:
+            print('parent is', self.get_parent().display_board())
+        else:
+            print('We are actively in the root node')
         self.display_board()
         print('There are', len(self.get_children()), 'children')
         print('The trail of the active node is set to', self.get_trail())
@@ -151,8 +174,6 @@ class TreeNode:
                     max_board_val = tboard_eval   
                 else:
                     child.reset_trail()
-            # if self.get_depth() == 6:
-            #     print('The max estimated score is', max_board_val)
             return max_board_val
         
         else:
@@ -168,7 +189,7 @@ class TreeNode:
             return min_board_val   
         
     def make_move(self, full = False):
-        self.display_board()
+        # self.display_board()
         for child in self.get_children():
             if child.get_trail() == True:
                 child.display_board()
@@ -176,17 +197,46 @@ class TreeNode:
                     for grandchild in child.get_children():
                         if grandchild.get_trail() == True:
                             grandchild.make_move(True)
+                return child
+
+    def play_game(self):
+        '''
+        Assumes AI is the maximizing player
+        '''
+        while self.get_board_val == 0 or len(self.get_children()) != 0:
+            self.display_board()
+            if self.is_max_turn():
+                ai_move = self.make_move()
+                ai_move.play_game()
+            else:
+                player_move = self.input_board_position(True)
+                if player_move.get_trail() != True:
+                    player_move.minimax()
+                player_move.play_game()
+        print('-----Game Over-----')
+        if self.get_board_val() > 0:
+            print('X Team Won!!')
+        elif self.get_board_val() < 0:
+            print('O Team Won!!')
+        else:
+            print('Close But Tie Game')
+        quit()
+
+
+
+
 
  
 if __name__ == "__main__":                                  
-    board = [['X', 'O', '-'], 
-            ['-', 'X', '-'], 
-            ['-', '-', 'O']]
-    root = TreeNode(board, depth = 4)
+    # board = [['X', '-', '-'], 
+    #          ['-', '-', 'O'], 
+    #          ['-', '-', 'X']]
+    # root = TreeNode(board, depth = 3)
+    # root.generate_boards()
 
-    root.generate_boards()
+    root = call_root_board()
     root.minimax()
-    root.make_move(True)
+    root.play_game()
 
 # for child in root.get_children():
 #     if child.get_trail() == True:
