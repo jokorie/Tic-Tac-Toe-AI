@@ -2,20 +2,25 @@ from board_evaluation import *
 from board_generation import *
 import pickle
 
-board = [['-', '-', '-'], 
-         ['-', '-', '-'], 
-         ['-', '-', '-']]
+def store_root_board():
+  board = [['-', '-', '-'], 
+           ['-', '-', '-'], 
+           ['-', '-', '-']]
 
-root = TreeNode(board, depth = 0)
+  root = TreeNode(board, depth = 0)
 
-root.generate_boards()
+  root.generate_boards()
 
-with open('board.combinations', 'wb') as board_combinations_file:
-  pickle.dump(root, board_combinations_file)
+  with open('board.combinations', 'wb') as board_combinations_file:
+    pickle.dump(root, board_combinations_file)
 
-# with open('board.combinations', 'rb') as board_combinations_file:
-#   root = pickle.load(board_combinations_file)
-#   # root.display_board()
-#   root.display_status()
-#   for child in root.get_children():
-#     child.display_board()
+def call_root_board():
+  with open('board.combinations', 'rb') as board_combinations_file:
+    root = pickle.load(board_combinations_file)
+    return root
+
+if __name__ == '__main__':
+  store_root_board()
+  root = call_root_board()
+  root.display_board()
+
