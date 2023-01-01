@@ -10,6 +10,15 @@ import copy
 
 class TreeNode:
     def __init__(self, board, parent = None, depth = 0, children = []):
+        '''
+        board - list representing tic tac toe board
+        parent - TreeNode object representing parent node
+        depth - attribute representing the depth of the tree (increasing as you go down). COuld also be used to represent turn
+        children - list containing TreeNode objects of all the potential resulting nodes from one move on the current node
+        maxTurn - is it the maximizing players turn?
+        value - float representing the value assosciated with the current board state
+        trail - indicates the best move
+        '''
         self.board = board
         self.parent = parent
         self.value = None
@@ -73,7 +82,6 @@ class TreeNode:
         else:
             self.value = evaluation(self.get_board())/self.get_depth()
         
-        
     def get_board_val(self):
         return self.value
     
@@ -103,6 +111,11 @@ class TreeNode:
             child.reset_trail()
     
     def input_board_position(self, player_ismin):
+        '''
+        Allows user interactivity with the tic tac toe board
+        User specifies which position they would like to chose
+        Return the corresponding child TreeNode object
+        '''
         if player_ismin:
             team = 'O'
         else:
@@ -126,6 +139,10 @@ class TreeNode:
 
 
     def display_status(self):
+        '''
+        Displays general information for TreeNode object in a human readable way.
+        Primarily used for debugging
+        '''
         print('-----Status of Current Node-----')
         if self.get_parent() != None:
             print('parent is', self.get_parent().display_board())
@@ -138,6 +155,11 @@ class TreeNode:
         print('-----End of Status Report-----')
     
     def generate_boards(self):
+        '''
+        Used to generate all potential offspring corresponding nodes from passed in TreeNode object
+        Updates the children attribute of the TreeNode object with all the potential board options
+        Recursively repeats the steps for the TreeNode's children until terminal state or draw reached
+        '''
         # print('Board for Tree depth =', self.get_depth())
         # self.display_board()
         self.set_board_val()
@@ -160,6 +182,11 @@ class TreeNode:
     
 
     def minimax(self):
+        '''
+        Applies the minimax algorithm to create a trail of the trail attributes
+        The optimal child node for the best move is going to have its trail attribute = True
+        Recursive mutates the trails of the child's children
+        '''
         self.set_board_val()
         if self.get_board_val() != 0 or len(self.get_children()) == 0:
             return self.get_board_val()
@@ -189,6 +216,10 @@ class TreeNode:
             return min_board_val   
         
     def make_move(self, full = False):
+        '''
+        Uses the trail of trails set by the minimax function to return the treenode child corresponding with the best move
+        if full set to True, then the 'thought-process' or predicted board timeline will be shown
+        '''
         # self.display_board()
         for child in self.get_children():
             if child.get_trail() == True:
@@ -201,7 +232,11 @@ class TreeNode:
 
     def play_game(self):
         '''
+        Allows the user and the AI to play a game of tic tac toe
         Assumes AI is the maximizing player
+        The AI uses the make_move and minimax function to chose the ideal child node
+        After the turn switches and the user specifies his best move, if the users move was not 
+            already predicted by the minimax algorithm then we need to recalculate the ideal route
         '''
         while self.get_board_val == 0 or len(self.get_children()) != 0:
             self.display_board()
@@ -222,10 +257,6 @@ class TreeNode:
             print('Close But Tie Game')
         quit()
 
-
-
-
-
  
 if __name__ == "__main__":                                  
     # board = [['X', '-', '-'], 
@@ -237,36 +268,6 @@ if __name__ == "__main__":
     root = call_root_board()
     root.minimax()
     root.play_game()
-
-# for child in root.get_children():
-#     if child.get_trail() == True:
-#         child.display_board()
-#         for grandchild in child.get_children():
-#             count = 0
-#             if grandchild.get_trail() == True:
-#                 count += 1
-#                 grandchild.display_board()
-#                 print()
-#         print(count)
-
-# counter = 0
-# for row in board:
-#     counter += row.count('X') + row.count('O')
-
-# print(root.board)
-# print(len(root.get_board()))
-# print()
-# for child in root.get_children():
-#     print('Here are the trails of the children:', child.get_trail())
-# print(root.board is root.get_board())
-# print(len(root.children))
-# oboard = root.get_board()
-# board[0][1] = 'Y'
-# root.set_board(board)
-# nboard = root.get_board()
-# print(oboard == nboard)
-# print(root.get_descendants())
-
 
         
         
