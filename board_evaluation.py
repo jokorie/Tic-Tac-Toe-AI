@@ -2,7 +2,7 @@
 """
 Created on Wed Dec 28 00:14:22 2022
 
-@author: justi
+@author: justin
 """
 
 #board evaluation

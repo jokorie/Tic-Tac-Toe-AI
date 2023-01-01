@@ -68,7 +68,10 @@ class TreeNode:
         '''
         Returns the value of the current board state. Incentivizes arriving at favorable terminal board states quicker
         '''
-        self.value = evaluation(self.get_board())/self.get_depth()
+        if self.get_depth() == 0:
+            self.value = 0
+        else:
+            self.value = evaluation(self.get_board())/self.get_depth()
         
         
     def get_board_val(self):
@@ -101,7 +104,10 @@ class TreeNode:
     
     def display_status(self):
         print('-----Status of Current Node-----')
-        print('parent is', self.get_parent().display_board())
+        # if self.get_parent() != None:
+        #     print('parent is', self.get_parent().display_board())
+        # else:
+        #     print('We are actively in the root node')
         self.display_board()
         print('There are', len(self.get_children()), 'children')
         print('The trail of the active node is set to', self.get_trail())
@@ -127,6 +133,7 @@ class TreeNode:
                     
         for child in self.get_children():
             child.generate_boards()
+
     
 
     def minimax(self):
@@ -171,15 +178,15 @@ class TreeNode:
                             grandchild.make_move(True)
 
  
-                                  
-board = [['X', 'O', '-'], 
-         ['-', 'X', '-'], 
-         ['-', '-', 'O']]
-root = TreeNode(board, depth = 4)
+if __name__ == "__main__":                                  
+    board = [['X', 'O', '-'], 
+            ['-', 'X', '-'], 
+            ['-', '-', 'O']]
+    root = TreeNode(board, depth = 4)
 
-root.generate_boards()
-root.minimax()
-root.make_move(True)
+    root.generate_boards()
+    root.minimax()
+    root.make_move(True)
 
 # for child in root.get_children():
 #     if child.get_trail() == True:
