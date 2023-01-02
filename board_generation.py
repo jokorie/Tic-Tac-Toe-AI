@@ -127,7 +127,7 @@ class TreeNode:
             print('-----Thank you-----')
             played_board = self.get_board()[:]
             if played_board[row-1][column-1] != '-':
-                print('Sorry you selected an occupied spot. Try again')
+                print('Sorry, the slot you selected is either occupied or does not exist. Try again')
                 continue
             break
         played_board[row-1][column-1] = team
@@ -137,6 +137,13 @@ class TreeNode:
         else:
             return None
 
+    def select_team(self):
+        while True:
+            player_team = input('Please input which team you would like to play for ("X" or "O"): ')
+            if player_team.upper() == 'X' or player_team.upper() == 'O':
+                break
+            print('Please try again and input a valid team ("X" or "O")')
+        return player_team
 
     def display_status(self):
         '''
@@ -173,8 +180,8 @@ class TreeNode:
                         child_board = self.get_board()
                         child_board[i][j] = 'O'
                     child = TreeNode(child_board, self, self.get_depth() + 1)
+                    child.set_board_val()
                     self.set_children([child])
-                    child_board = self.get_board()
                     
         for child in self.get_children():
             child.generate_boards()
@@ -187,7 +194,7 @@ class TreeNode:
         The optimal child node for the best move is going to have its trail attribute = True
         Recursive mutates the trails of the child's children
         '''
-        self.set_board_val()
+        # self.set_board_val()
         if self.get_board_val() != 0 or len(self.get_children()) == 0:
             return self.get_board_val()
         
@@ -223,32 +230,33 @@ class TreeNode:
         # self.display_board()
         for child in self.get_children():
             if child.get_trail() == True:
-                child.display_board()
+                # child.display_board()
                 if full:
                     for grandchild in child.get_children():
                         if grandchild.get_trail() == True:
                             grandchild.make_move(True)
                 return child
 
-    def play_game(self):
+    def play_game(self, aiismax):
         '''
         Allows the user and the AI to play a game of tic tac toe
-        Assumes AI is the maximizing player
+        If the ai is the maximizing player and it is the maximizing player's turn to move then, 
         The AI uses the make_move and minimax function to chose the ideal child node
         After the turn switches and the user specifies his best move, if the users move was not 
             already predicted by the minimax algorithm then we need to recalculate the ideal route
         '''
         while self.get_board_val == 0 or len(self.get_children()) != 0:
             self.display_board()
-            if self.is_max_turn():
+            if (aiismax == self.is_max_turn()):
                 ai_move = self.make_move()
-                ai_move.play_game()
+                ai_move.play_game(aiismax)
             else:
-                player_move = self.input_board_position(True)
+                player_move = self.input_board_position(aiismax)
                 if player_move.get_trail() != True:
                     player_move.minimax()
-                player_move.play_game()
+                player_move.play_game(aiismax)
         print('-----Game Over-----')
+        self.display_board()
         if self.get_board_val() > 0:
             print('X Team Won!!')
         elif self.get_board_val() < 0:
@@ -264,10 +272,10 @@ if __name__ == "__main__":
     #          ['-', '-', 'X']]
     # root = TreeNode(board, depth = 3)
     # root.generate_boards()
-
     root = call_root_board()
+    player_team = root.select_team()
     root.minimax()
-    root.play_game()
+    root.play_game((player_team.upper() == "O"))
 
         
         
