@@ -25,7 +25,6 @@ class TreeNode:
         self.depth = depth
         self.children = children
         self.maxTurn = (depth%2 == 0)
-        self.trail = False
     
     def get_board(self):
         return copy.deepcopy(self.board)
@@ -80,35 +79,10 @@ class TreeNode:
         if self.get_depth() == 0:
             self.value = 0
         else:
-            self.value = evaluation(self.get_board())/self.get_depth()
+            self.value = int(evaluation(self.get_board())/self.get_depth())
         
     def get_board_val(self):
         return self.value
-    
-    def get_trail(self):
-        return self.trail
-    
-    def set_trail_true(self):
-        self.trail = True
-        
-    def set_trail_false(self, siblings = False):
-        '''
-        Sets the trail of the current node = to False. 
-        If siblings = True, then it sets the trails of all of its siblings to false as well
-        '''
-        if siblings == True:
-            for child in self.get_parent().get_children():
-                child.set_trail_false()
-        else:
-            self.trail = False
-    
-    def reset_trail(self):
-        '''
-        Sets the trails of the active node and all its resulting combinations to False
-        '''
-        self.trail = False
-        for child in self.get_children():
-            child.reset_trail()
     
     def input_board_position(self, player_ismin):
         '''
@@ -161,7 +135,7 @@ class TreeNode:
         print('The board value is', self.get_board_val())
         print('-----End of Status Report-----')
     
-    def generate_boards(self):
+    def generate_boards(self, all = False):
         '''
         Used to generate all potential offspring corresponding nodes from passed in TreeNode object
         Updates the children attribute of the TreeNode object with all the potential board options
@@ -183,10 +157,9 @@ class TreeNode:
                     child.set_board_val()
                     self.set_children([child])
                     
-        for child in self.get_children():
-            child.generate_boards()
-
-    
+        if all:
+            for child in self.get_children():
+                child.generate_boards()
 
     def minimax(self):
         '''
@@ -195,47 +168,27 @@ class TreeNode:
         Recursive mutates the trails of the child's children
         '''
         # self.set_board_val()
-        if self.get_board_val() != 0 or len(self.get_children()) == 0:
-            return self.get_board_val()
+        self.generate_boards()
+        if self.get_board_val() not in [None, 0] or len(self.get_children()) == 0:
+            return self, self.get_board_val()
         
-        if self.is_max_turn():
-            max_board_val = -1000
+        if self.maxTurn:
+            max_board_val = None, -1000
             for child in self.get_children():
-                tboard_eval = child.minimax()
-                if tboard_eval > max_board_val:
-                    child.set_trail_false(siblings = True)
-                    child.set_trail_true()
-                    max_board_val = tboard_eval   
-                else:
-                    child.reset_trail()
+                tboard_eval = child.minimax()[1]
+                if tboard_eval == max(tboard_eval, max_board_val[1]):
+                    max_board_val = child, tboard_eval  
+            # self.value = max_board_val[1]
             return max_board_val
         
         else:
-            min_board_val = 1000
+            min_board_val = None, 1000
             for child in self.get_children():
-                tboard_eval = child.minimax()
-                if tboard_eval < min_board_val:
-                    child.set_trail_false(siblings = True)
-                    child.set_trail_true()
-                    min_board_val = tboard_eval
-                else:
-                    child.reset_trail()
-            return min_board_val   
-        
-    def make_move(self, full = False):
-        '''
-        Uses the trail of trails set by the minimax function to return the treenode child corresponding with the best move
-        if full set to True, then the 'thought-process' or predicted board timeline will be shown
-        '''
-        # self.display_board()
-        for child in self.get_children():
-            if child.get_trail() == True:
-                # child.display_board()
-                if full:
-                    for grandchild in child.get_children():
-                        if grandchild.get_trail() == True:
-                            grandchild.make_move(True)
-                return child
+                tboard_eval = child.minimax()[1]
+                if tboard_eval < min_board_val[1]:
+                    min_board_val = child, tboard_eval
+            # self.value = min_board_val[1]
+            return min_board_val  
 
     def play_game(self, aiismax):
         '''
@@ -245,15 +198,14 @@ class TreeNode:
         After the turn switches and the user specifies his best move, if the users move was not 
             already predicted by the minimax algorithm then we need to recalculate the ideal route
         '''
-        while self.get_board_val == 0 or len(self.get_children()) != 0:
+        self.generate_boards()
+        while (self.get_board_val() == 0 or self.get_board_val() == None) and len(self.get_children()) != 0:
             self.display_board()
             if (aiismax == self.is_max_turn()):
-                ai_move = self.make_move()
+                ai_move = self.minimax()[0]
                 ai_move.play_game(aiismax)
             else:
                 player_move = self.input_board_position(aiismax)
-                if player_move.get_trail() != True:
-                    player_move.minimax()
                 player_move.play_game(aiismax)
         print('-----Game Over-----')
         self.display_board()
@@ -267,14 +219,13 @@ class TreeNode:
 
  
 if __name__ == "__main__":                                  
-    # board = [['X', '-', '-'], 
-    #          ['-', '-', 'O'], 
-    #          ['-', '-', 'X']]
-    # root = TreeNode(board, depth = 3)
-    # root.generate_boards()
-    root = call_root_board()
+    board = [['-', '-', '-'], 
+             ['-', '-', '-'], 
+             ['-', '-', '-']]
+    root = TreeNode(board, depth = 0)
+    root.generate_boards()
+    # root = call_root_board()
     player_team = root.select_team()
-    root.minimax()
     root.play_game((player_team.upper() == "O"))
 
         

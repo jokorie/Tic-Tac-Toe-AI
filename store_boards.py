@@ -12,7 +12,7 @@ def store_root_board():
 
   root = TreeNode(board, depth = 0)
 
-  root.generate_boards()
+  root.generate_all_boards(True)
 
   with open('board.combinations', 'wb') as board_combinations_file:
     pickle.dump(root, board_combinations_file)
