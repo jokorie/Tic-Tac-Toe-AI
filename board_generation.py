@@ -220,9 +220,9 @@ if __name__ == "__main__":
     board = [['-', '-', '-'], 
              ['-', '-', '-'], 
              ['-', '-', '-']]
-    root = TreeNode(board, depth = 0)
-    root.generate_boards()
-    # root = call_root_board()
+#     root = TreeNode(board, depth = 0)
+#     root.generate_boards()
+    root = call_root_board()
     player_team = root.select_team()
     root.play_game((player_team.upper() == "O"))
 
