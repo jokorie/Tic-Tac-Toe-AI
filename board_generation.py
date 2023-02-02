@@ -163,9 +163,7 @@ class TreeNode:
 
     def minimax(self):
         '''
-        Applies the minimax algorithm to create a trail of the trail attributes
-        The optimal child node for the best move is going to have its trail attribute = True
-        Recursive mutates the trails of the child's children
+        Applies the minimax algorithm to recursively search for optimal child nodes
         '''
         # self.set_board_val()
         self.generate_boards()
