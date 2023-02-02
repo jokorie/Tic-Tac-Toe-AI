@@ -21,3 +21,7 @@ Uses a minimax algorithm to optimize decision making for tic-tac-toe. Game is pl
 
 ![eo3qr44bp1w96a92t8s2](https://user-images.githubusercontent.com/121595907/216156892-1b97cda1-b64d-40b9-9160-c5e9cd0a5fb2.png)
 
+# Mock Game
+![image](https://user-images.githubusercontent.com/121595907/216385245-dbc686b8-a18e-46ff-a9d0-c6dab88b7951.png)
+
+
