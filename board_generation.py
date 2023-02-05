@@ -162,9 +162,7 @@ class TreeNode:
 
     def minimax(self):
         '''
-        Applies the minimax algorithm to create a trail of the trail attributes
-        The optimal child node for the best move is going to have its trail attribute = True
-        Recursive mutates the trails of the child's children
+        Applies the minimax algorithm to recursively search for optimal child nodes
         '''
         # self.set_board_val()
         # self.generate_boards()
@@ -221,8 +219,8 @@ if __name__ == "__main__":
     board = [['-', '-', '-'], 
              ['-', '-', '-'], 
              ['-', '-', '-']]
-    # root = TreeNode(board, depth = 0)
-    # root.generate_boards(True)
+#     root = TreeNode(board, depth = 0)
+#     root.generate_boards()
     root = call_root_board()
     player_team = root.select_team()
     root.play_game((player_team.upper() == "O"))
