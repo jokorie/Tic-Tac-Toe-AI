@@ -131,7 +131,6 @@ class TreeNode:
             print('We are actively in the root node')
         self.display_board()
         print('There are', len(self.get_children()), 'children')
-        print('The trail of the active node is set to', self.get_trail())
         print('The board value is', self.get_board_val())
         print('-----End of Status Report-----')
     
@@ -159,7 +158,7 @@ class TreeNode:
                     
         if all:
             for child in self.get_children():
-                child.generate_boards()
+                child.generate_boards(True)
 
     def minimax(self):
         '''
@@ -168,7 +167,7 @@ class TreeNode:
         Recursive mutates the trails of the child's children
         '''
         # self.set_board_val()
-        self.generate_boards()
+        # self.generate_boards()
         if self.get_board_val() not in [None, 0] or len(self.get_children()) == 0:
             return self, self.get_board_val()
         
@@ -185,7 +184,7 @@ class TreeNode:
             min_board_val = None, 1000
             for child in self.get_children():
                 tboard_eval = child.minimax()[1]
-                if tboard_eval < min_board_val[1]:
+                if tboard_eval == min(tboard_eval, min_board_val[1]):
                     min_board_val = child, tboard_eval
             # self.value = min_board_val[1]
             return min_board_val  
@@ -198,7 +197,7 @@ class TreeNode:
         After the turn switches and the user specifies his best move, if the users move was not 
             already predicted by the minimax algorithm then we need to recalculate the ideal route
         '''
-        self.generate_boards()
+        # self.generate_boards(True)
         while (self.get_board_val() == 0 or self.get_board_val() == None) and len(self.get_children()) != 0:
             self.display_board()
             if (aiismax == self.is_max_turn()):
@@ -222,9 +221,9 @@ if __name__ == "__main__":
     board = [['-', '-', '-'], 
              ['-', '-', '-'], 
              ['-', '-', '-']]
-    root = TreeNode(board, depth = 0)
-    root.generate_boards()
-    # root = call_root_board()
+    # root = TreeNode(board, depth = 0)
+    # root.generate_boards(True)
+    root = call_root_board()
     player_team = root.select_team()
     root.play_game((player_team.upper() == "O"))
 
