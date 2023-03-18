@@ -6,10 +6,9 @@ Created on Wed Dec 28 00:37:57 2022
 """
 from board_evaluation import evaluation
 from store_boards import *
-import copy
 
 class TreeNode:
-    def __init__(self, board, parent = None, depth = 0, children = []):
+    def __init__(self, board, parent = None, depth = 0, children = None):
         '''
         board - list representing tic tac toe board
         parent - TreeNode object representing parent node
@@ -19,6 +18,8 @@ class TreeNode:
         value - float representing the value assosciated with the current board state
         trail - indicates the best move
         '''
+        if children is None:
+            children = []
         self.board = board
         self.parent = parent
         self.value = None
@@ -27,7 +28,7 @@ class TreeNode:
         self.maxTurn = (depth%2 == 0)
     
     def get_board(self):
-        return copy.deepcopy(self.board)
+        return [row[:] for row in self.board]
         
     def set_board(self, board):
         self.board = board
@@ -36,16 +37,13 @@ class TreeNode:
         '''displays board in tic tac toe format
         '''
         print('-----Printing Board-----')
-        print(self.get_board()[0])
-        print(self.get_board()[1])
-        print(self.get_board()[2])
+        print(self.board[0])
+        print(self.board[1])
+        print(self.board[2])
         print('-----Board Printed-----')
     
     def get_children(self):
-        return copy.copy(self.children)
-    
-    def get_parent(self):
-        return copy.copy(self.parent)
+        return self.children[:]
     
     def set_children(self, childlist):
         if len(self.get_children()) == 0:
@@ -62,9 +60,6 @@ class TreeNode:
             desc += child.get_descendants()
         return desc
     
-    def get_depth(self):
-        return self.depth
-    
     def is_max_turn(self):
         '''
         Returns True if maximizer player's turn
@@ -76,13 +71,10 @@ class TreeNode:
         '''
         Returns the value of the current board state. Incentivizes arriving at favorable terminal board states quicker
         '''
-        if self.get_depth() == 0:
+        if self.depth == 0:
             self.value = 0
         else:
-            self.value = int(evaluation(self.get_board())/self.get_depth())
-        
-    def get_board_val(self):
-        return self.value
+            self.value = int(evaluation(self.get_board())/self.depth)
     
     def input_board_position(self, player_ismin):
         '''
@@ -125,34 +117,32 @@ class TreeNode:
         Primarily used for debugging
         '''
         print('-----Status of Current Node-----')
-        if self.get_parent() != None:
-            print('parent is', self.get_parent().display_board())
+        if self.parent != None:
+            print('parent is', self.parent.display_board())
         else:
             print('We are actively in the root node')
         self.display_board()
         print('There are', len(self.get_children()), 'children')
-        print('The board value is', self.get_board_val())
+        print('The board value is', self.value)
         print('-----End of Status Report-----')
-    
+                
     def generate_boards(self, all = False):
         '''
         Used to generate all potential offspring corresponding nodes from passed in TreeNode object
         Updates the children attribute of the TreeNode object with all the potential board options
         Recursively repeats the steps for the TreeNode's children until terminal state or draw reached
         '''
-        # print('Board for Tree depth =', self.get_depth())
-        # self.display_board()
         self.set_board_val()
-        for i in range(len(self.get_board())):
-            for j in range(len(self.get_board())):
-                if (self.get_board()[i][j] == None or self.get_board()[i][j] == '-') and self.get_board_val() == 0:                    
+        for i, row in enumerate(self.get_board()):
+            for j, col in enumerate(row):
+                if (col == None or col == '-') and self.value == 0:                    
                     if self.is_max_turn():
                         child_board = self.get_board()
                         child_board[i][j] = 'X'
                     else:
                         child_board = self.get_board()
                         child_board[i][j] = 'O'
-                    child = TreeNode(child_board, self, self.get_depth() + 1)
+                    child = TreeNode(child_board, self, self.depth + 1)
                     child.set_board_val()
                     self.set_children([child])
                     
@@ -160,32 +150,29 @@ class TreeNode:
             for child in self.get_children():
                 child.generate_boards(True)
 
+        
     def minimax(self):
         '''
         Applies the minimax algorithm to recursively search for optimal child nodes
         '''
-        # self.set_board_val()
-        # self.generate_boards()
-        if self.get_board_val() not in [None, 0] or len(self.get_children()) == 0:
-            return self, self.get_board_val()
+        if self.value not in [None, 0] or len(self.get_children()) == 0:
+            return self, self.value
         
         if self.maxTurn:
-            max_board_val = None, -1000
+            start_state, max_board_val = None, -1000
             for child in self.get_children():
-                tboard_eval = child.minimax()[1]
-                if tboard_eval == max(tboard_eval, max_board_val[1]):
-                    max_board_val = child, tboard_eval  
-            # self.value = max_board_val[1]
-            return max_board_val
+                desc, desc_val = child.minimax()
+                if desc_val == max(desc_val, max_board_val):
+                    start_state, max_board_val = child, desc_val  
+            return start_state, max_board_val
         
         else:
-            min_board_val = None, 1000
+            start_state, min_board_val = None, 1000
             for child in self.get_children():
-                tboard_eval = child.minimax()[1]
-                if tboard_eval == min(tboard_eval, min_board_val[1]):
-                    min_board_val = child, tboard_eval
-            # self.value = min_board_val[1]
-            return min_board_val  
+                desc, desc_val = child.minimax()
+                if desc_val == min(desc_val, min_board_val):
+                    start_state, min_board_val = child, desc_val
+            return start_state, min_board_val  
 
     def play_game(self, aiismax):
         '''
@@ -195,35 +182,50 @@ class TreeNode:
         After the turn switches and the user specifies his best move, if the users move was not 
             already predicted by the minimax algorithm then we need to recalculate the ideal route
         '''
-        # self.generate_boards(True)
-        while (self.get_board_val() == 0 or self.get_board_val() == None) and len(self.get_children()) != 0:
-            self.display_board()
-            if (aiismax == self.is_max_turn()):
-                ai_move = self.minimax()[0]
-                ai_move.play_game(aiismax)
+        state = self
+        while (state.value == 0 or state.value == None) and len(state.get_children()) != 0:
+            state.display_board()
+            if (aiismax == state.is_max_turn()):
+                state = state.minimax()[0]
             else:
-                player_move = self.input_board_position(aiismax)
-                player_move.play_game(aiismax)
+                state = state.input_board_position(aiismax)
+                
+        return state.end_game()
+        
+    def end_game(self):
         print('-----Game Over-----')
         self.display_board()
-        if self.get_board_val() > 0:
+        if self.value > 0:
             print('X Team Won!!')
-        elif self.get_board_val() < 0:
+        elif self.value < 0:
             print('O Team Won!!')
         else:
             print('Close But Tie Game')
-        quit()
+        while True:
+            decision = input("Would you like to play again (y/N): ")
+            if decision == 'y':
+                return True
+            elif decision == 'N':
+                return False
+            print('Please input a valid expression')
+        
 
  
 if __name__ == "__main__":                                  
     board = [['-', '-', '-'], 
              ['-', '-', '-'], 
              ['-', '-', '-']]
-#     root = TreeNode(board, depth = 0)
-#     root.generate_boards()
+    # root = TreeNode(board, depth = 0)
+    # root.generate_boards(True)
     root = call_root_board()
-    player_team = root.select_team()
-    root.play_game((player_team.upper() == "O"))
+    
+    while True:
+        player_team = root.select_team()
+        decision = root.play_game((player_team.upper() == "O"))
+        if decision == False:
+            break
+    print("Thank you for playing")
+
 
         
         
