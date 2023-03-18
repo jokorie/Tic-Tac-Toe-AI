@@ -90,6 +90,7 @@ class TreeNode:
             print('-----please specify your next move-----')
             column = int(input('Column (1-3): '))
             row = int(input('Row (1-3): '))
+
             print('-----Thank you-----')
             played_board = self.get_board()[:]
             if played_board[row-1][column-1] != '-':
