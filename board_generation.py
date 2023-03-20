@@ -92,10 +92,15 @@ class TreeNode:
             row = int(input('Row (1-3): '))
 
             print('-----Thank you-----')
-            played_board = self.get_board()[:]
-            if played_board[row-1][column-1] != '-':
-                print('Sorry, the slot you selected is either occupied or does not exist. Try again')
+            played_board = self.get_board()
+            try:
+                if played_board[row-1][column-1] != '-':
+                    print('Sorry, the slot you selected is occupied or does not exist. Try again')
+                    continue
+            except IndexError:
+                print('The slot you selected is out of range. Try again')
                 continue
+
             break
         played_board[row-1][column-1] = team
         for child in self.get_children():
@@ -216,9 +221,9 @@ if __name__ == "__main__":
     board = [['-', '-', '-'], 
              ['-', '-', '-'], 
              ['-', '-', '-']]
-    # root = TreeNode(board, depth = 0)
-    # root.generate_boards(True)
-    root = call_root_board()
+    root = TreeNode(board, depth = 0)
+    root.generate_boards(True)
+    # root = call_root_board()
     
     while True:
         player_team = root.select_team()
